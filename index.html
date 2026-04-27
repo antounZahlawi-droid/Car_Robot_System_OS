@@ -1,227 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Antoun's Special Car SystemOS</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Link Rover | Antoun Edition WebOS</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <!-- MUSIC -->
-    <audio id="bgMusic" loop>
-        <source src="Town Theme 1.mp3" type="audio/mpeg">
-    </audio>
+  <!-- AUDIO -->
+  <audio id="startupSound"><source src="assets/audio/Startup.wav" type="audio/wav"></audio>
+  <audio id="bgMusic" loop><source src="assets/audio/music.mp3" type="audio/mpeg"></audio>
+  <audio id="errorSound"><source src="assets/audio/basso.mp3" type="audio/mpeg"></audio>
+  <audio id="sosumiSound"><source src="assets/audio/Sosumi.mp3" type="audio/mpeg"></audio>
+  <audio id="completeSound"><source src="assets/audio/Complete.mp3" type="audio/mpeg"></audio>
 
-    <!-- ERROR SOUND -->
-    <audio id="errorSound">
-        <source src="basso.mp3" type="audio/mpeg">
-    </audio>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="top-left">
+      <img src="assets/photos/bmo.webp" class="bmoinindex" alt="BMO was here">
+      <span class="top-title">Link Rover | Antoun Edition</span>
+    </div>
+    <div class="top-right">
+      <button class="btn btn-red" id="emergencyBtn">Emergency stop</button>
+      <button class="btn btn-off" id="shutdownBtn">Robot turn off</button>
+    </div>
+  </header>
 
-    <!-- TOP BAR -->
-    <header class="topbar">
-        <button class="btn btn-red">Emergency stop</button>
+  <div class="layout">
 
-        <!--<div class="lang-box">
-            <button class="btn btn-gray">En</button>
-            <button class="btn btn-gray">Ar</button>
-        </div>-->
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">LR</div>
 
-        <button class="btn btn-red">Robot turn off</button>
-    </header>
+      <button class="menu-item" id="btnCarOS">Link Rover</button>
+      <button class="menu-item" id="btnAbout">About</button>
 
-    <div class="layout">
+      <div class="settings-panel">
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="logo">Antoun Bashar Zahlawi Systems</div>
+        <div class="settings-title">Music</div>
+        <div class="settings-row">
+          <label class="switch">
+            <input type="checkbox" id="musicToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
 
-            <button class="menu-item" id="btnCarOS">Car Control Panel</button>
-            <button class="menu-item" id="btnAbout">About</button>
-            <button class="menu-item" id="btnErrorTest">Trigger Error</button>
+        <div class="settings-title">Volume</div>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" class="mac-slider">
 
-            <!-- SETTINGS PANEL -->
-            <div class="settings-panel">
+        <div class="settings-title" style="margin-top:18px;">Mode</div>
 
-                <div class="settings-title">Music</div>
-                <div class="settings-row">
-                    <label class="switch">
-                        <input type="checkbox" id="musicToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+        <div class="mode-row">
+          <div class="mode-box">
+            <img src="assets/photos/Controller.png" class="mode-icon" alt="Controller">
+            <div class="mode-label">Controller</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="controllerToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
 
-                <div class="settings-title">Volume</div>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" class="mac-slider">
+        <div class="mode-row">
+          <div class="mode-box">
+            <img src="assets/photos/Bluetooth.png" class="mode-icon" alt="Bluetooth">
+            <div class="mode-label">Bluetooth</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="btToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
 
-                <div class="settings-title" style="margin-top:18px;">Mode</div>
+        <div class="mode-row">
+          <div class="mode-box">
+            <img src="assets/photos/wifi.png" class="mode-icon" alt="WiFi">
+            <div class="mode-label">WiFi</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="wifiToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
 
-                <div class="mode-row">
-                    <div class="mode-box">
-                        <img src="Controller.png" class="mode-icon">
-                        <div class="mode-label">Controller</div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+      </div>
+    </aside>
 
-                <div class="mode-row">
-                    <div class="mode-box">
-                        <img src="Bluetooth.png" class="mode-icon">
-                        <div class="mode-label">Bluetooth</div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+    <!-- DESKTOP -->
+    <main class="content">
+      <h1 class="desktop-title">Car SystemOS</h1>
+    </main>
+  </div>
 
-                <div class="mode-row">
-                    <div class="mode-box">
-                        <img src="wifi.png" class="mode-icon">
-                        <div class="mode-label">WiFi</div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-            </div>
-        </aside>
-
-        <!-- MAIN DESKTOP -->
-        <main class="content">
-            <h1 class="desktop-title">Car SystemOS</h1>
-        </main>
+  <!-- ABOUT WINDOW -->
+  <div class="window" id="winAbout">
+    <div class="window-titlebar">
+      <div class="traffic-lights">
+        <button class="traffic-btn close" data-target="winAbout"></button>
+      </div>
+      <div class="window-title-text">NiavaBot – Link Rover | Antoun Edition</div>
     </div>
 
-    <!-- ABOUT WINDOW -->
-    <div class="window" id="winAbout">
-        <div class="window-titlebar">
-            <div class="traffic-lights">
-                <button class="traffic-btn close" data-target="winAbout"></button>
-            </div>
-            <div class="window-title-text">About – Car SystemOS</div>
+    <div class="window-content">
+      <h2 class="title">About This Project</h2>
+
+      <div class="about-flex">
+        <img src="assets/photos/robot.png" class="robot-img" alt="Robot">
+
+        <div class="text-box">
+          <p>This project is a web‑controlled robotic system developed as part of the <strong>Niava Talent Track – Systems & Robotics</strong> program.</p>
+          <p>It is designed specifically for the student <strong>Antoun (11 years old)</strong> as a guided engineering project focused on system thinking, control architecture, and safety principles.</p>
+
+          <h2>Vision & Philosophy</h2>
+          <ul>
+            <li>Teach how to build a real robotic control system.</li>
+            <li>Use an expandable and modular architecture.</li>
+            <li>Ensure safe operation at all times.</li>
+            <li>Design the robot as part of a complete system.</li>
+          </ul>
+
+          <h2>High‑Level Architecture</h2>
+          <ul>
+            <li><strong>Robot Hardware Layer</strong> — Motor control.</li>
+            <li><strong>Communication Layer</strong> — WiFi + JSON.</li>
+            <li><strong>Control Logic Layer</strong> — Safety + validation.</li>
+            <li><strong>Web Dashboard Layer</strong> — UI + status.</li>
+          </ul>
+
+          <h2>Project Overview</h2>
+          <ul>
+            <li>Web dashboard robot control.</li>
+            <li>Local network command execution.</li>
+            <li>Real‑time sensor feedback.</li>
+            <li>Expandable modules.</li>
+          </ul>
         </div>
+      </div>
 
-        <div class="window-content">
-            <h2 class="title">About This Project</h2>
+      <div class="text-box full-width">
+        <p style="text-align:center; margin-top:20px; font-size:14px; color:#777;">© 2026 Antoun Bashar Zahlawi — All Rights Reserved.</p>
+      </div>
+    </div>
+  </div>
 
-            <div class="about-flex">
-                <img src="robot.png" class="robot-img" alt="Robot">
-
-                <div class="text-box">
-                    <p>
-                        <strong>A web-controlled mobile robot system project created by Antoun Bashar Zahlawi (11 years old)</strong>
-                        <br><br>
-                        <strong>Project Overview:</strong><br>
-                        • Controlling a mobile robot via a web interface<br>
-                        • Sending movement commands over a network connection<br>
-                        • Executing commands within clear safety rules<br>
-                        • Viewing the robot's status in real time<br><br>
-                        The project was fully created and developed by <strong>Antoun Bashar Zahlawi</strong>.
-                    </p>
-                </div>
-            </div>
-
-            <div class="text-box full-width">
-                <p style="text-align:center; margin-top:20px; font-size:14px; color:#777;">
-                    © 2026 Antoun Bashar Zahlawi — All Rights Reserved.
-                </p>
-            </div>
-
-        </div>
+  <!-- CAR CONTROL WINDOW -->
+  <div class="window" id="winCarOS">
+    <div class="window-titlebar">
+      <div class="traffic-lights">
+        <button class="traffic-btn close" data-target="winCarOS"></button>
+      </div>
+      <div class="window-title-text">Car Control Panel</div>
     </div>
 
-    <!-- CAR CONTROL WINDOW -->
-    <div class="window" id="winCarOS">
-        <div class="window-titlebar">
-            <div class="traffic-lights">
-                <button class="traffic-btn close" data-target="winCarOS"></button>
-            </div>
-            <div class="window-title-text">Car Control Panel</div>
+    <button class="spin-btn" id="refreshCarBtn">⟳</button>
+
+    <div class="window-content">
+
+      <div class="lr-section">
+        <h2 class="lr-title">Car Camera</h2>
+        <div class="lr-camera-box">
+          <video id="carCam" autoplay muted playsinline></video>
+          <div class="lr-status">Status: <span class="green">Available</span></div>
+        </div>
+      </div>
+
+      <div class="lr-section">
+        <h2 class="lr-title">Car Control</h2>
+
+        <div class="lr-control-pad">
+          <button class="lr-btn" data-dir="forward"><img src="assets/photos/up.png" class="forwardpic"></button>
+
+          <div class="lr-middle-row">
+            <button class="lr-btn" data-dir="left"><img src="assets/photos/left.png" class="leftpic"></button>
+            <button class="lr-btn stop" data-dir="stop">■</button>
+            <button class="lr-btn" data-dir="right"><img src="assets/photos/right.png" class="rightpic"></button>
+          </div>
+
+          <button class="lr-btn" data-dir="backward"><img src="assets/photos/down.png" class="backwardpic"></button>
         </div>
 
-        <button class="spin-btn" id="refreshCarBtn">⟳</button>
+        <div class="speed-control">
+          <div class="settings-title">Speed</div>
+          <input type="range" id="speedSlider" min="0" max="255" value="255" class="mac-slider">
+          <div class="speed-value">Current: <span id="speedValue">255</span></div>
+        </div>
 
-        <div class="window-content">
+      </div>
 
-            <div class="lr-section">
-                <h2 class="lr-title">Car Camera</h2>
+      <div class="lr-section">
+        <h2 class="lr-title">Car Sensors</h2>
 
-                <div class="lr-camera-box">
-                    <video id="carCam" autoplay muted playsinline></video>
-                    <div class="lr-status">Status: <span class="green">Available</span></div>
-                </div>
-            </div>
+        <div class="lr-sensor-grid">
 
-            <div class="lr-section">
-                <h2 class="lr-title">Car Control</h2>
+          <div class="sensor-box">
+            <div class="sensor-label">Front Sensor</div>
+            <div class="sensor-value" id="carS1">-- cm</div>
+          </div>
 
-                <div class="lr-control-pad">
-                    <button class="lr-btn" data-dir="forward">▲</button>
-
-                    <div class="lr-middle-row">
-                        <button class="lr-btn" data-dir="left">◀</button>
-                        <button class="lr-btn stop" data-dir="stop">■</button>
-                        <button class="lr-btn" data-dir="right">▶</button>
-                    </div>
-
-                    <button class="lr-btn" data-dir="backward">▼</button>
-                </div>
-            </div>
-
-            <div class="lr-section">
-                <h2 class="lr-title">Car Sensors</h2>
-
-                <div class="lr-sensor-grid">
-                    <div class="sensor-box">
-                        <div class="sensor-label">Sensor 1</div>
-                        <div class="sensor-value" id="carS1">100</div>
-                    </div>
-
-                    <div class="sensor-box">
-                        <div class="sensor-label">Sensor 2</div>
-                        <div class="sensor-value" id="carS2">100</div>
-                    </div>
-
-                    <div class="sensor-box">
-                        <div class="sensor-label">Sensor 3</div>
-                        <div class="sensor-value" id="carS3">100</div>
-                    </div>
-
-                    <div class="sensor-box">
-                        <div class="sensor-label">Sensor 4</div>
-                        <div class="sensor-value" id="carS4">100</div>
-                    </div>
-                </div>
-            </div>
+          <div class="sensor-box">
+            <div class="sensor-label">Rear Sensor</div>
+            <div class="sensor-value" id="carS2">-- cm</div>
+          </div>
 
         </div>
+
+        <div id="papyrusWarning" class="warning-box" style="
+          margin-top:15px;
+          padding:10px;
+          background:#222;
+          color:#0ff;
+          border-radius:8px;
+          text-align:center;
+          font-weight:bold;
+        ">
+          Mmm… no walls.
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ERROR WINDOW -->
+  <div class="window error-macos" id="errorWindow">
+    <div class="window-titlebar">
+      <div class="traffic-lights">
+        <button class="traffic-btn close" data-target="errorWindow"></button>
+      </div>
+      <div class="window-title-text">System Error</div>
     </div>
 
-    <!-- FULL MACOS ERROR WINDOW -->
-    <div class="window error-macos" id="errorWindow">
-        <div class="window-titlebar">
-            <div class="traffic-lights">
-                <button class="traffic-btn close" data-target="errorWindow"></button>
-            </div>
-            <div class="window-title-text">System Error</div>
-        </div>
+    <div class="window-content">
+      <h2 class="title">
+        <img src="assets/photos/warning.webp" class="warningimage" alt="Warning">
+        An error has occurred
+      </h2>
 
-        <div class="window-content">
-            <h2 class="title">An error has occurred</h2>
-            <p style="font-size:16px; color:#444;">
-                Car SystemOS encountered a problem and could not complete the action.
-            </p>
+      <p style="font-size:16px; color:#444;">Car SystemOS encountered a problem and could not complete the action.</p>
 
-            <button id="closeError" class="error-btn">OK</button>
-        </div>
+      <button id="closeError" class="error-btn">OK</button>
+    </div>
+  </div>
+
+  <!-- BMO -->
+  <img id="bmo" src="assets/photos/bmo.webp" alt="BMO" class="bmo-icon">
+
+  <div id="bmo-window" class="window hidden">
+    <div class="window-titlebar">
+      <div class="traffic-lights">
+        <button class="traffic-btn close" data-target="bmo-window"></button>
+      </div>
+      <div class="window-title-text">BMO AI</div>
     </div>
 
-    <script src="script.js"></script>
+    <div class="window-content">
+      <div id="bmo-output">Hello Antoun! BMO is ready to help with your robot!</div>
+      <input id="bmo-input" type="text" placeholder="Ask BMO something...">
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
