@@ -1,191 +1,330 @@
-// =====================
-// MUSIC ELEMENTS
-// =====================
-const music = document.getElementById("bgMusic");
-const musicToggle = document.getElementById("musicToggle");
-const volumeSlider = document.getElementById("volumeSlider");
+document.addEventListener("DOMContentLoaded", () => {
 
-// =====================
-// WINDOWS
-// =====================
-const btnAbout = document.getElementById("btnAbout");
-const btnCarOS = document.getElementById("btnCarOS");
-const winAbout = document.getElementById("winAbout");
-const winCarOS = document.getElementById("winCarOS");
-
-// =====================
-// ERROR SYSTEM
-// =====================
-const errorSound = document.getElementById("errorSound");
-const errorWindow = document.getElementById("errorWindow");
-const closeError = document.getElementById("closeError");
-const btnErrorTest = document.getElementById("btnErrorTest");
-
-// =====================
-// REFRESH BUTTON
-// =====================
-const refreshCarBtn = document.getElementById("refreshCarBtn");
-
-// =====================
-// MUSIC SYSTEM
-// =====================
-music.volume = 0.5;
-music.pause();
-updateSliderFill();
-
-musicToggle.addEventListener("change", () => {
-    if (musicToggle.checked) {
-        music.play().catch(() => {});
-    } else {
-        music.pause();
+  /* ============================================================
+     BOOT PROTECTION
+  ============================================================ */
+  if (!sessionStorage.getItem("booted") || !sessionStorage.getItem("loggedIn")) {
+    if (!location.href.includes("boot.html") && !location.href.includes("login.html")) {
+      window.location.href = "boot.html";
+      return;
     }
-});
+  }
 
-function updateSliderFill() {
-    const value = volumeSlider.value * 100;
-    volumeSlider.style.background =
-        `linear-gradient(to right, #0a84ff ${value}%, #d1d1d6 ${value}%)`;
-}
+  /* ============================================================
+     ROBOT HTTP CONTROL (REAL ARDUINO)
+  ============================================================ */
 
-volumeSlider.addEventListener("input", () => {
-    music.volume = volumeSlider.value;
-    updateSliderFill();
-});
+  const ROBOT_BASE = "http://localhost:3000/robot";
 
-// =====================
-// WINDOW SYSTEM
-// =====================
-function showWindow(win) {
-    if (!win) return;
-    win.style.display = "block";
-    win.style.left = "50%";
-    win.style.top = "50%";
-    win.style.transform = "translate(-50%, -50%)";
-    win.style.zIndex = Date.now();
-}
+  let currentSpeed = 255;
+  let sensor1Value = -1;   // FRONT
+  let sensor2Value = -1;   // REAR
+  let avgDistance = -1;
 
-function hideWindow(win) {
-    if (!win) return;
-    win.style.display = "none";
-}
+  function updateSensorsFromData(data) {
+    const s1El = document.getElementById("carS1");
+    const s2El = document.getElementById("carS2");
+    const warn = document.getElementById("papyrusWarning");
 
-btnAbout.addEventListener("click", () => showWindow(winAbout));
-btnCarOS.addEventListener("click", () => showWindow(winCarOS));
+    sensor1Value = data.s1;
+    sensor2Value = data.s2;
 
-document.querySelectorAll(".traffic-btn.close").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const target = btn.getAttribute("data-target");
-        const w = document.getElementById(target);
-        if (!w) {
-            showError();
-            return;
+    if (sensor1Value !== -1 && sensor2Value !== -1) {
+      avgDistance = Math.round((sensor1Value + sensor2Value) / 2);
+    } else {
+      avgDistance = -1;
+    }
+
+    if (s1El) s1El.textContent = (sensor1Value === -1 ? "-- cm" : sensor1Value + " cm");
+    if (s2El) s2El.textContent = (sensor2Value === -1 ? "-- cm" : sensor2Value + " cm");
+
+    if (warn) {
+      if (avgDistance === -1) {
+        warn.textContent = "Mmm… no walls.";
+        warn.style.color = "#0ff";
+      } else if (avgDistance < 15) {
+        warn.textContent = "D'OH! WALL!";
+        warn.style.color = "#ff4444";
+      } else {
+        warn.textContent = "All clear!";
+        warn.style.color = "#0f0";
+      }
+    }
+  }
+
+  function sendRobot(cmd) {
+    const map = {
+      "cforward": "cf",
+      "cbackward": "cb",
+      "cleft": "cl",
+      "cright": "cr",
+      "cstop": "cs"
+    };
+
+    const finalCmd = map[cmd] || cmd;
+
+    const url = `${ROBOT_BASE}/?q=${encodeURIComponent(finalCmd)}&spd=${currentSpeed}`;
+
+    fetch(url)
+      .then(r => r.json())
+      .then(data => updateSensorsFromData(data))
+      .catch(() => {
+        const warn = document.getElementById("papyrusWarning");
+        if (warn) {
+          warn.textContent = "Robot not responding.";
+          warn.style.color = "#ff4444";
         }
-        hideWindow(w);
+      });
+  }
+
+  // Poll sensors every 200ms
+  setInterval(() => {
+    fetch(`${ROBOT_BASE}/`)
+      .then(r => r.json())
+      .then(data => updateSensorsFromData(data))
+      .catch(() => {});
+  }, 200);
+
+  /* ============================================================
+     WINDOW SYSTEM
+  ============================================================ */
+  function makeWindowDraggable(win) {
+    const titlebar = win.querySelector(".window-titlebar");
+    if (!titlebar) return;
+
+    let offsetX = 0, offsetY = 0, dragging = false;
+
+    titlebar.addEventListener("mousedown", (e) => {
+      dragging = true;
+      win.style.zIndex = Date.now();
+      offsetX = e.clientX - win.offsetLeft;
+      offsetY = e.clientY - win.offsetTop;
     });
-});
 
-// =====================
-// DRAGGING WINDOWS
-// =====================
-document.querySelectorAll(".window").forEach(win => {
-    const bar = win.querySelector(".window-titlebar");
-    let dragging = false;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    bar.addEventListener("mousedown", e => {
-        dragging = true;
-        const rect = win.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-        win.style.zIndex = Date.now();
+    document.addEventListener("mousemove", (e) => {
+      if (!dragging) return;
+      win.style.left = `${e.clientX - offsetX}px`;
+      win.style.top = `${e.clientY - offsetY}px`;
+      win.style.transform = "none";
     });
 
-    document.addEventListener("mousemove", e => {
-        if (!dragging) return;
-        win.style.left = e.clientX - offsetX + "px";
-        win.style.top = e.clientY - offsetY + "px";
-        win.style.transform = "none";
+    document.addEventListener("mouseup", () => dragging = false);
+  }
+
+  function openWindow(id) {
+    const win = document.getElementById(id);
+    if (!win) return;
+
+    win.style.display = "block";
+    win.style.zIndex = Date.now();
+
+    if (!win.dataset.positioned) {
+      win.style.left = "50%";
+      win.style.top = "50%";
+      win.style.transform = "translate(-50%, -50%)";
+      win.dataset.positioned = "1";
+    }
+  }
+
+  function initWindows() {
+    const wins = document.querySelectorAll(".window");
+    wins.forEach(w => {
+      w.style.display = "none";
+      makeWindowDraggable(w);
     });
 
-    document.addEventListener("mouseup", () => {
-        dragging = false;
+    const closeBtns = document.querySelectorAll(".traffic-btn.close");
+    closeBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target;
+        const win = document.getElementById(target);
+        if (win) win.style.display = "none";
+      });
     });
-});
+  }
 
-// =====================
-// CAR CONTROL BUTTONS
-// =====================
-document.querySelectorAll(".lr-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const dir = btn.getAttribute("data-dir");
-        console.log("Car move:", dir);
-        // later: send to robot backend
+  initWindows();
+
+  /* ============================================================
+     SIDEBAR NAVIGATION
+  ============================================================ */
+  const btnCarOS = document.getElementById("btnCarOS");
+  const btnAbout = document.getElementById("btnAbout");
+
+  if (btnCarOS) btnCarOS.addEventListener("click", () => openWindow("winCarOS"));
+  if (btnAbout) btnAbout.addEventListener("click", () => openWindow("winAbout"));
+
+  /* ============================================================
+     AUDIO SYSTEM
+  ============================================================ */
+  const startupSound = document.getElementById("startupSound");
+  const bgMusic = document.getElementById("bgMusic");
+  const errorSound = document.getElementById("errorSound");
+  const sosumiSound = document.getElementById("sosumiSound");
+  const completeSound = document.getElementById("completeSound");
+  const musicToggle = document.getElementById("musicToggle");
+  const volumeSlider = document.getElementById("volumeSlider");
+
+  if (startupSound) startupSound.play().catch(() => {});
+  if (bgMusic) bgMusic.volume = 0.5;
+
+  function updateSliderFill(slider) {
+    const min = slider.min ? slider.min : 0;
+    const max = slider.max ? slider.max : 1;
+    const value = ((slider.value - min) / (max - min)) * 100;
+    slider.style.background = `linear-gradient(to right, #0a84ff ${value}%, #d1d1d6 ${value}%)`;
+  }
+
+  if (volumeSlider && bgMusic) {
+    updateSliderFill(volumeSlider);
+    volumeSlider.addEventListener("input", (e) => {
+      bgMusic.volume = parseFloat(e.target.value);
+      updateSliderFill(volumeSlider);
     });
-});
+  }
 
-// =====================
-// SENSOR SIMULATION
-// =====================
-setInterval(() => {
-    const s1 = document.getElementById("carS1");
-    const s2 = document.getElementById("carS2");
-    const s3 = document.getElementById("carS3");
-    const s4 = document.getElementById("carS4");
-    if (!s1 || !s2 || !s3 || !s4) return;
+  if (musicToggle && bgMusic) {
+    musicToggle.addEventListener("change", (e) => {
+      if (e.target.checked) bgMusic.play().catch(() => {});
+      else bgMusic.pause();
+    });
+  }
 
-    const v1 = Math.floor(Math.random() * 200);
-    const v2 = Math.floor(Math.random() * 200);
-    const v3 = Math.floor(Math.random() * 200);
-    const v4 = Math.floor(Math.random() * 200);
+  /* ============================================================
+     SPEED SLIDER
+  ============================================================ */
+  const speedSlider = document.getElementById("speedSlider");
+  const speedValue = document.getElementById("speedValue");
 
-    s1.textContent = v1;
-    s2.textContent = v2;
-    s3.textContent = v3;
-    s4.textContent = v4;
+  if (speedSlider && speedValue) {
+    currentSpeed = parseInt(speedSlider.value, 10) || 255;
+    speedValue.textContent = currentSpeed;
 
-    // Example: trigger error if any sensor too high
-    //if (v1 > 190 || v2 > 190 || v3 > 190 || v4 > 190) {
-      //  showError();
-    //}
-}, 1000);
+    speedSlider.addEventListener("input", () => {
+      currentSpeed = parseInt(speedSlider.value, 10);
+      speedValue.textContent = currentSpeed;
+      updateSliderFill(speedSlider);
+    });
+  }
 
-// =====================
-// REFRESH BUTTON SPIN
-// =====================
-if (refreshCarBtn) {
+  /* ============================================================
+     TOP BAR BUTTONS
+  ============================================================ */
+  const emergencyBtn = document.getElementById("emergencyBtn");
+  const shutdownBtn = document.getElementById("shutdownBtn");
+
+  if (emergencyBtn) {
+    emergencyBtn.addEventListener("click", () => {
+      sendRobot("cstop");
+      if (errorSound) errorSound.play().catch(() => {});
+      openWindow("errorWindow");
+    });
+  }
+
+  if (shutdownBtn) {
+    shutdownBtn.addEventListener("click", () => {
+      sendRobot("cstop");
+      if (sosumiSound) sosumiSound.play().catch(() => {});
+    });
+  }
+
+  /* ============================================================
+     SPIN MODE
+  ============================================================ */
+  let spinTimeout = null;
+
+  const refreshCarBtn = document.getElementById("refreshCarBtn");
+  if (refreshCarBtn) {
     refreshCarBtn.addEventListener("click", () => {
-        refreshCarBtn.classList.add("spin");
-        setTimeout(() => refreshCarBtn.classList.remove("spin"), 600);
-        console.log("Refresh clicked");
+      if (completeSound) completeSound.play().catch(() => {});
+      sendRobot("cmode=spin");
+
+      if (spinTimeout) clearTimeout(spinTimeout);
+
+      spinTimeout = setTimeout(() => {
+        sendRobot("cmode=normal");
+      }, 12000);
     });
-}
+  }
 
-// =====================
-// ERROR SYSTEM (MACOS STYLE)
-// =====================
-function playError() {
-    if (!errorSound) return;
-    errorSound.currentTime = 0;
-    errorSound.play().catch(() => {});
-}
+  /* ============================================================
+     CAR CONTROL BUTTONS
+  ============================================================ */
+  const carButtons = document.querySelectorAll(".lr-btn");
 
-function showError() {
-    if (!errorWindow) return;
-    playError();
-    showWindow(errorWindow);
-    const box = errorWindow.querySelector(".window-content");
-    if (!box) return;
-    box.classList.add("shake");
-    setTimeout(() => box.classList.remove("shake"), 350);
-}
+  carButtons.forEach(btn => {
+    const dir = btn.dataset.dir;
 
-if (btnErrorTest) {
-    btnErrorTest.addEventListener("click", showError);
-}
+    btn.addEventListener("mousedown", () => {
+      if (spinTimeout) {
+        clearTimeout(spinTimeout);
+        spinTimeout = null;
+        sendRobot("cmode=normal");
+      }
 
-if (closeError) {
-    closeError.addEventListener("click", () => {
-        hideWindow(errorWindow);
+      sendRobot("c" + dir);
+      if (completeSound) completeSound.play().catch(() => {});
     });
-}
+
+    btn.addEventListener("mouseup", () => sendRobot("cstop"));
+    btn.addEventListener("mouseleave", () => sendRobot("cstop"));
+  });
+
+  /* ============================================================
+     BMO AI
+  ============================================================ */
+  const bmo = document.getElementById("bmo");
+  const bmoWindow = document.getElementById("bmo-window");
+  const bmoInput = document.getElementById("bmo-input");
+  const bmoOutput = document.getElementById("bmo-output");
+
+  const API_KEY = "YOUR_API_KEY_HERE";
+  const MODEL = "gemini-2.5-flash";
+
+  async function bmoAsk(text) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/${MODEL}:generateContent?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: `You are BMO. User: ${text}` }
+                ]
+              }
+            ]
+          })
+        }
+      );
+      const data = await response.json();
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "BMO is sleepy…";
+    } catch (err) {
+      console.error("BMO ERROR:", err);
+      return "BMO tripped on a cable!";
+    }
+  }
+
+  if (bmo && bmoWindow && bmoInput && bmoOutput) {
+    bmo.addEventListener("click", () => openWindow("bmo-window"));
+
+    bmoInput.addEventListener("keydown", async (e) => {
+      if (e.key !== "Enter") return;
+      const text = bmoInput.value.trim();
+      if (!text) return;
+
+      bmoOutput.textContent = "BMO is thinking...";
+      bmoInput.value = "";
+
+      const reply = await bmoAsk(text);
+      bmoOutput.textContent = reply;
+    });
+  }
+
+  /* ============================================================
+     FINAL LOG
+  ============================================================ */
+  console.log("Catalina D2 HTTP build loaded.");
+});
