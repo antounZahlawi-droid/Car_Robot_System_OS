@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Link Rover Boot</title>
+
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    }
+
+    .boot-center {
+        text-align: center;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    .boot-logo {
+        font-size: 70px;
+        margin-bottom: 16px;
+        opacity: 0.9;
+        width: 70px;
+        height: 70px;
+    }
+
+    .boot-text {
+        font-size: 18px;
+        margin-bottom: 22px;
+        opacity: 0.85;
+    }
+
+    .boot-bar {
+        width: 260px;
+        height: 10px;
+        border-radius: 6px;
+        background: #333;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+
+    .boot-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: #fff;
+        transition: width 0.15s linear;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+
+<body>
+    <div class="boot-center">
+        <img src="assets/photos/bmo.webp" class="boot-logo" alt="BMO was here">
+        <div class="boot-text">Link Rover | Antoun Edition</div>
+
+        <div class="boot-bar">
+            <div class="boot-bar-fill" id="bootFill"></div>
+        </div>
+    </div>
+
+    <audio id="bootSound">
+        <source src="Startup.wav" type="audio/wav">
+    </audio>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const fill = document.getElementById("bootFill");
+        const bootSound = document.getElementById("bootSound");
+
+        bootSound.play().catch(()=>{});
+
+        let p = 0;
+        const timer = setInterval(() => {
+            p += 2;
+            fill.style.width = p + "%";
+
+            if (p >= 100) {
+                clearInterval(timer);
+                sessionStorage.setItem("booted", "yes");
+                setTimeout(() => window.location.href = "login.html", 400);
+            }
+        }, 80);
+    });
+</script>
+</body>
+</html>

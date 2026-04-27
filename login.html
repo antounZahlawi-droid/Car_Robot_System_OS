@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+
+<!-- Error sound -->
+<audio id="errorSound">
+    <source src="assets/audio/basso.mp3" type="audio/mpeg">
+</audio>
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+
+        /* Catalina Day Wallpaper */
+        background: url("assets/photos/loginwallpaper.jpg") no-repeat center center fixed;
+        background-size: cover;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+        color: #fff;
+        user-select: none;
+        animation: fadeScreen 0.6s ease-out;
+    }
+
+    @keyframes fadeScreen {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* TOP CLOCK */
+    .login-clock {
+        position: absolute;
+        top: 40px;
+        width: 100%;
+        text-align: center;
+        font-size: 32px;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        opacity: 0.95;
+    }
+
+    /* MAIN PANEL */
+    .login-panel {
+        background: rgba(255,255,255,0.14);
+        backdrop-filter: blur(28px) saturate(180%);
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+        padding: 55px 60px;
+        border-radius: 22px;
+        text-align: center;
+        width: 350px;
+        border: 1px solid rgba(255,255,255,0.28);
+        box-shadow: 0 35px 80px rgba(0,0,0,0.55);
+        animation: panelPop 0.45s ease-out;
+    }
+
+    @keyframes panelPop {
+        from { opacity: 0; transform: translateY(12px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* AVATAR */
+    .login-avatar {
+        width: 105px;
+        height: 105px;
+        border-radius: 50%;
+        background: #4a90e2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        margin: 0 auto 20px;
+        border: 2px solid rgba(255,255,255,0.45);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+    }
+
+    .login-name {
+        font-size: 22px;
+        margin-bottom: 24px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+    }
+
+    /* PASSWORD FIELD */
+    .password-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .lock-icon {
+        position: absolute;
+        left: 14px;
+        top: 30%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .password-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px 14px;
+        padding-left: 38px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.25);
+        background: rgba(255,255,255,0.18);
+        color: #fff;
+        outline: none;
+        margin-bottom: 18px;
+        font-size: 15px;
+        transition: 0.25s;
+        text-align: left;
+    }
+
+    .password-input::placeholder {
+        color: rgba(255,255,255,0.6);
+    }
+
+    .password-input:focus {
+        border-color: #0a84ff;
+        box-shadow: 0 0 0 4px rgba(10,132,255,0.35);
+        background: rgba(255,255,255,0.25);
+    }
+
+    /* LOGIN BUTTON */
+    .login-btn {
+        padding: 10px 30px;
+        border-radius: 999px;
+        border: none;
+        background: #0a84ff;
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+        width: 100%;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+    }
+
+    .login-btn:hover {
+        background: #006be6;
+    }
+
+    /* ERROR MESSAGE */
+    .error-msg {
+        color: #ff3b30;
+        font-size: 14px;
+        margin-top: 12px;
+        display: none;
+    }
+
+    /* SHAKE ANIMATION */
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        15% { transform: translateX(-12px); }
+        30% { transform: translateX(12px); }
+        45% { transform: translateX(-10px); }
+        60% { transform: translateX(10px); }
+        75% { transform: translateX(-6px); }
+        100% { transform: translateX(0); }
+    }
+
+    .shake {
+        animation: shake 0.45s ease;
+    }
+</style>
+</head>
+
+<body>
+
+    <!-- CLOCK -->
+    <div class="login-clock" id="clock"></div>
+
+    <div class="login-panel" id="panel">
+        <div class="login-avatar">A</div>
+        <div class="login-name">Antoun</div>
+
+        <div class="password-wrapper">
+            <span class="lock-icon">🔒</span>
+            <input type="password" id="password" class="password-input" placeholder="Enter password">
+        </div>
+
+        <button class="login-btn" id="loginBtn">Log In</button>
+
+        <div class="error-msg" id="errorMsg">Incorrect password</div>
+    </div>
+
+    <!-- Login success sound -->
+    <audio id="loginSound">
+        <source src="assets/audio/Complete.mp3" type="audio/mpeg">
+    </audio>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    if (!sessionStorage.getItem("booted")) {
+        window.location.href = "boot.html";
+        return;
+    }
+
+    const errsound = document.getElementById("errorSound");
+    const loginSound = document.getElementById("loginSound");
+    const btn = document.getElementById("loginBtn");
+    const passwordInput = document.getElementById("password");
+    const errorMsg = document.getElementById("errorMsg");
+    const panel = document.getElementById("panel");
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // BOOST LOGIN SOUND
+    //const loginTrack = audioCtx.createMediaElementSource(loginSound);
+    //const loginGain = audioCtx.createGain();
+    //loginGain.gain.value = 4.0;
+    //loginTrack.connect(loginGain).connect(audioCtx.destination);
+
+    // BOOST ERROR SOUND
+    //const errorTrack = audioCtx.createMediaElementSource(errsound);
+    //const errorGain = audioCtx.createGain();
+    //errorGain.gain.value = 4.0;
+    //errorTrack.connect(errorGain).connect(audioCtx.destination);
+
+    const CORRECT_PASSWORD = "antoun";
+
+    function tryLogin() {
+        const typed = passwordInput.value.trim();
+
+        if (typed === CORRECT_PASSWORD) {
+            errorMsg.style.display = "none";
+            loginSound.play().catch(()=>{});
+            sessionStorage.setItem("loggedIn", "yes");
+            setTimeout(() => window.location.href = "index.html", 600);
+        } else {
+            errorMsg.style.display = "block";
+            errsound.play();
+            panel.classList.remove("shake");
+            void panel.offsetWidth;
+            panel.classList.add("shake");
+            passwordInput.value = "";
+        }
+    }
+
+    btn.addEventListener("click", tryLogin);
+    passwordInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") tryLogin();
+    });
+
+    // CLOCK FUNCTION
+    function updateClock() {
+        const now = new Date();
+        const options = {
+            weekday: 'long',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        document.getElementById("clock").textContent =
+            now.toLocaleString('en-US', options);
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+});
+</script>
+
+</body>
+</html>
